@@ -1,0 +1,20 @@
+(function ($) {
+    /**
+     * Sticky behavior for main navigation.
+     */
+    Drupal.behaviors.gnc_sticky_navigation = {
+        attach: function (context, settings) {
+            $(context).find('.region-navigation').once('stickyfied').each(function() {
+                var element = $(this);
+
+                // Initialize the sticky.
+                $(element).sticky({ topSpacing: 0 });
+
+                // If the admin toolbar is shown, use the same offset.
+                $(document).on('drupalViewportOffsetChange.toolbar', function (event, offsets) {
+                    $(element).sticky({ topSpacing: offsets.top });
+                });
+            });
+        }
+    }
+}(jQuery));

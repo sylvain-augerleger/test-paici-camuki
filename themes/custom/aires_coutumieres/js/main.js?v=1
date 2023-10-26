@@ -1,0 +1,294 @@
+/**
+ * @file
+ * aires_coutumieres theme main javascript file.
+ */
+(function ($, Drupal) {
+
+    'use strict';
+
+    /**
+     * Fix for empty sidebars regions.
+     *
+     * Make sure sidebars are hidden and bootstrap grid is properly done.
+     * Because Drupal 8 use lazy rendering, sometimes regions can appear even if no blocks are in it.
+     * This is core bug that is still not resolved, so we do this ourselves for now.
+     * @see https://www.drupal.org/node/953034
+     */
+    Drupal.behaviors.aires_coutumieres_empty_sidebars_fix = {
+        attach: function (context) {
+            if ($('.main-container', context).length > 0) {
+                var main_container = $('.main-container', context);
+                var main_container_sidebar_first = $(main_container).find('.main-container-sidebar-first');
+                var main_container_sidebar_second = $(main_container).find('.main-container-sidebar-second');
+                var main_container_content = $(main_container).find('.main-container-content');
+
+                // Compute the columns count.
+                var main_container_content_col = 12;
+                if (main_container_sidebar_first.children().length > 0) {
+                    main_container_content_col -= 3;
+                } else {
+                    // Remove sidebar first if no children.
+                    $(main_container_sidebar_first).remove();
+                }
+
+                if (main_container_sidebar_second.children().length > 0) {
+                    main_container_content_col -= 3;
+                } else {
+                    // Remove sidebar second if no children.
+                    $(main_container_sidebar_second).remove();
+                }
+
+                // Refresh main container columns count.
+                $(main_container_content).removeClass(['col-sm-6', 'col-sm-9', 'col-sm-12']).addClass('col-sm-'+main_container_content_col);
+            }
+        }
+    };
+
+    /**
+     * Fix for empty regions.
+     *
+     * Because Drupal 8 use lazy rendering, sometimes regions can appear even if no blocks are in it.
+     * This is core bug that is still not resolved, so we do this ourselves for now.
+     * @see https://www.drupal.org/node/953034
+     */
+    Drupal.behaviors.aires_coutumieres_empty_regions_fix = {
+        attach: function (context) {
+            if ($('.dynamic-region', context).length > 0) {
+                var region = $('.dynamic-region', context);
+                $(region).each(function() {
+                    var children = $(this).find('.dynamic-region-inner').children();
+                    if ($(children).length == 0) {
+                        $(this).remove();
+                    }
+                });
+            }
+        }
+    };
+
+    /**
+     * Enable masonry on some views.
+     *
+     * Views that want masoney, have to add a CSS class : "view-uses-masonry".
+     * The view has to use the Grid display, and each item have to add a CSS class : "col".
+     */
+    Drupal.behaviors.aires_coutumieres_views_masonry = {
+        attach: function (context) {
+            $('.main-container', context).imagesLoaded(function() {
+                var view = $('.view-uses-masonry');
+                view.imagesLoaded( function () {
+                    view.find('.views-view-grid').masonry({
+                        columnWidth: '.views-col',
+                        itemSelector: '.views-col'
+                    });
+                });
+            });
+        }
+    };
+
+    /**
+     * Animate search-block-form only for screen larger than xs
+     * More on boostrap size : (http://getbootstrap.com/css/#responsive-utilities)
+     */
+    Drupal.behaviors.searchFormExpand = {
+        attach: function (context) {
+            var selector = '#block-global-search-form';
+            var $block = $(context).find(selector).once('js-expand-processed');
+            if ($block.length > 0) {
+                var formWidth = $($block).css('width');
+
+                $(selector).find('input.form-control').on('focus', function() {
+                    var isMobile = window.matchMedia("only screen and (max-width: 760px)");
+                    if (!isMobile.matches) {
+                        $($block).css('width', '70%');
+                    }
+                }).on('blur', function() {
+                    var isMobile = window.matchMedia("only screen and (max-width: 760px)");
+                    if (!isMobile.matches) {
+                        $($block).css('width', formWidth);
+                    }
+                });
+            }
+        }
+    };
+
+    /**
+     * Accordions toggles.
+     */
+    Drupal.behaviors.accordions = {
+        attach: function (context) {
+            $('.panel-group-wrapper', context).each(function() {
+                var wrapper = $(this);
+
+                // Accordion open all.
+                $(this).find('.panel-group-control-open-all').on('click', function () {
+                    $('.panel-collapse', wrapper).collapse('show');
+                });
+
+                // Accordion close all.
+                $(this).find('.panel-group-control-close-all').on('click', function () {
+                    $('.panel-collapse', wrapper).collapse('hide');
+                });
+            });
+        }
+    };
+
+    /**
+     * Videos JS initialization.
+     */
+    Drupal.behaviors.aires_coutumieres_video_js = {
+        attach: function (context) {
+            if ($('video', context).length > 0) {
+                var i = 0;
+                $('video', context).each(function() {
+                    var id = '';
+                    if ($(this).attr('id') != undefined) {
+                        id = $(this).attr('id');
+                    } else {
+                        id = 'video-auto-id-'+i;
+                        i++;
+                        $(this).attr('id', id);
+                    }
+
+                    $(this).addClass('video-js');
+
+                    var player = videojs(id, {
+                        controls: true,
+                        fluid: true
+                    }, function() {
+                        videojs.log('Your player is ready!');
+                    });
+                });
+            }
+        }
+    };
+
+    /**
+     * Date pickers.
+     */
+    Drupal.behaviors.aires_coutumieres_datepickers = {
+        attach: function (context) {
+            if ($('.js-datepicker', context).length > 0) {
+                $('.js-datepicker', context).datepicker({
+                    dateFormat: 'dd/mm/yy',
+                    changeMonth: true,
+                    changeYear: true,
+                    yearRange: "-100:+0"
+                }).inputmask('dd/mm/yyyy');
+            }
+        }
+    };
+
+})(jQuery, Drupal);
+
+jQuery(document).ready(function($) {
+  $('#block-aires-coutumieres-main-menu-first-level .menu.nav li').each(function() {
+        if(!$(this).hasClass('active')) {
+            if($(this).hasClass('expanded')) {
+                $(this).removeClass('expanded');
+            }
+        }
+    });
+
+  $('#block-aires-coutumieres-main-menu-first-level > .menu.nav > li > a').on('click', function (e) {
+          var is_current_li_expanded = $(this).parent().hasClass('expanded');
+          var current_li = $(this).parent();
+          var submenu = $(this).parent().find('.menu.nav').first();
+
+          if(submenu.length) {
+              e.preventDefault();
+
+              $('#block-aires-coutumieres-main-menu-first-level > .menu.nav > li').each(function() {
+                  if($(this).hasClass('expanded')) {
+                      $(this).removeClass('expanded');
+                      $(this).find('.menu.nav').first().slideToggle("slow", function () {});
+                  }
+              });
+
+              if(is_current_li_expanded) {
+                  current_li.removeClass('expanded');
+              }
+              else {
+                  current_li.addClass('expanded');
+                  current_li.find('.menu.nav').first().slideToggle( "slow", function() {});;
+              }
+          }
+      });
+
+});
+
+(function ($) {
+
+  Drupal.behaviors.espaceTouristique = {
+  attach: function (context, settings) {
+
+    //Zoom sur l'ancre "infos"
+    // Add smooth scrolling to all links
+      $("area").on('click', function(event) {
+
+        // Make sure this.hash has a value before overriding default behavior
+        if (this.hash !== "") {
+          // Prevent default anchor click behavior
+          event.preventDefault();
+
+          // Store hash
+          var hash = this.hash;
+          console.log(hash);
+          // Using jQuery's animate() method to add smooth page scroll
+          // The optional number (800) specifies the number of milliseconds it takes to scroll to the specified area
+          $('html, body').animate({
+              scrollTop: $(hash).offset().top
+          }, 800, function(){
+
+            // Add hash (#) to URL when done scrolling (default click behavior)
+            window.location.hash = hash;
+          });
+        }// End if
+      });
+
+    // -------------AFFICHAGE DES ESPACES TOURISTIQUE
+
+
+    $( ".view-display-id-block_1 .views-row" ).each(function(){
+      $( this ).hide();
+    });
+
+
+    $("#98860").click(function(){
+        $(".row-98860").show("slow");
+        $( ".view-display-id-block_1 .views-row" ).not( document.getElementsByClassName( "row-98860" )).each(function(){
+          $( this ).hide("slow");
+        });
+    });
+
+    $("#98825").click(function(){
+        $(".row-98825").show("slow");
+        $( ".view-display-id-block_1 .views-row" ).not( document.getElementsByClassName( "row-98825" )).each(function(){
+          $( this ).hide("slow");
+        });
+    });
+
+    $("#98831").click(function(){
+        $(".row-98831").show("slow");
+        $( ".view-display-id-block_1 .views-row" ).not( document.getElementsByClassName( "row-98831" )).each(function(){
+          $( this ).hide("slow");
+        });
+    });
+
+    $("#98822").click(function(){
+        $(".row-98822").show("slow");
+        $( ".view-display-id-block_1 .views-row" ).not( document.getElementsByClassName( "row-98822" )).each(function(){
+          $( this ).hide("slow");
+        });
+    });
+
+    $("#98823").click(function(){
+        $(".row-98823").show("slow");
+        $( ".view-display-id-block_1 .views-row" ).not( document.getElementsByClassName("row-98823")).each(function(){
+          $( this ).hide("slow");
+        });
+    });
+
+  } //attached
+}; //Drupal.behaviors.gncCircScript
+
+}(jQuery));

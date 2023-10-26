@@ -1,0 +1,89 @@
+(function ($) {
+    /**
+     * Sub-menus related script.
+     */
+    Drupal.behaviors.gnc_sub_menus = {
+        attach: function (context, settings) {
+            // Initialize click behavior on top level elements.
+            $('.block-gnc-sub-menus:not(.gncProcessed)', context).addClass('gncProcessed').each(function () {
+                var navbar = $('#navbar'),
+                    mainMenu = navbar.find('.main-menu-nav'),
+                    secondaryMenuWrapper = navbar.find('.block-gnc-sub-menus'),
+                    secondaryMenu = secondaryMenuWrapper.find('.menu-items-container'),
+                    active_mainMenu = mainMenu.find(".menu-parent.active");
+
+                secondaryMenu.find('.menu-items-block').find('.sub-menu-container > .mcol > .mrow > li').wrapInner('<span class="border-wrap"></span>');
+                secondaryMenu.find('ul > li > span > ul > li > ul > li > a').prepend('<i class="glyphicon glyphicon-chevron-right"></i>');
+
+
+                mainMenu.find('.menu-parent').on('click', function (e) {
+                    e.preventDefault();
+
+                    var self = $(this);
+
+                    // Get the targeted element.
+                    var targets = $.grep($(self).attr('class').split(' '), function (elem) {
+                        return elem.toLowerCase().indexOf('menu-link-content') > -1;
+                    });
+
+                    // If the target was found.
+                    if (targets.length == 1) {
+                        var link = $(this).find('> a');
+                        var target = targets[0];
+
+                        if ($(link).hasClass('active')) {
+                            // Close already active submenu.
+                            closeSubMenu();
+                        } else {
+                            // Close any previously active submenu.
+                            closeSubMenu();
+
+                            // Open submenu for this parent, link and target.
+                            openSubMenu(self, link, target);
+                        }
+                    }
+                });
+
+                // Menu close on click.
+                secondaryMenu.find('.menu-close').on('click', function () {
+                    closeSubMenu();
+                });
+
+                // Close menu after scroll using the sticky events
+                $(document).on('scroll', function () {
+                    closeSubMenu();
+                });
+
+                /**
+                 * Close any opened submenu.
+                 */
+                function closeSubMenu() {
+                    secondaryMenu.find(".menu-items-block.active").addClass('animate-close').removeClass('active');
+                    secondaryMenu.removeClass('active');
+                    secondaryMenu.find('.menu-close').removeClass('active');
+                    mainMenu.find(".menu-parent a").removeClass('active');
+                    mainMenu.find(".menu-parent").removeClass('active');
+                    active_mainMenu.addClass('active');
+                }
+
+                /**
+                 * Open the submenu for given link and target.
+                 */
+                function openSubMenu(parent, link, target) {
+                    // Define the submenus color.
+                    var defaultColorClass = 'turquoise';
+                    var colorClass = $(link).attr('data-color-class') ? $(link).data('color-class') : defaultColorClass;
+                    var subMenu = secondaryMenu.find(".menu-items-block[data-target='" + target + "']");
+
+                    secondaryMenu.find('.menu-close').attr('data-color-class', colorClass);
+                    secondaryMenuWrapper.attr('data-color-class', colorClass);
+
+                    subMenu.addClass("active").removeClass('animate-close');
+                    parent.find("a").addClass("active");
+                    parent.addClass("active");
+                    secondaryMenu.find('.menu-close').addClass('active');
+                }
+            });
+        }
+    }
+}(jQuery));

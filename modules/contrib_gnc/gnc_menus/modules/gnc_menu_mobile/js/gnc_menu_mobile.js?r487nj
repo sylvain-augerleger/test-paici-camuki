@@ -1,0 +1,34 @@
+(function($) {
+  /**
+   * Initialize the Slick nav for mobile.
+   */
+  Drupal.behaviors.gnc_menu_mobile = {
+    attach: function(context, settings) {
+      $('.gouv_mobile_menu', context).once('gncProcessed').each(function() {
+        $(this).find('> .menu.nav').slicknav({
+          duplicate: false,
+          label: '',
+          prependTo: '.gouv_mobile_menu',
+          closedSymbol: '&#xe080',
+          openedSymbol: '&#xe114',
+          allowParentLinks: true,
+          init: function() {
+            var parentMenu = $(
+              '.gouv_mobile_menu .slicknav_nav > li > .menu.nav'
+            );
+            parentMenu.siblings('a').each(function(i) {
+              var self = $(this);
+
+              self.find('a').on('click', function(e) {
+                self.trigger('click');
+                e.preventDefault();
+              });
+            });
+          }
+        });
+      });
+
+
+    }
+  };
+})(jQuery);

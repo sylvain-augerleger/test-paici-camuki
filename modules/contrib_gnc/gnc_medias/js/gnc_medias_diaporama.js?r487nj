@@ -1,0 +1,48 @@
+(function ($) {
+    /**
+     * Initialize diaporama slider.
+     */
+    Drupal.behaviors.gnc_medias_diaporama = {
+        attach: function (context, settings) {
+
+            var media_diaporama = $('.media.media--type-diaporama', context);
+            if ($(media_diaporama).length > 0) {
+                $(media_diaporama).not('.gnc-medias-diaporama-processed').each(function () {
+                    var slider = $(this).find('.field--name-field-diaporama-item .field__items');
+                    var slider_nav = $(this).find('.field--name-media-diaporama-nav .field__items');
+
+                    var sliderImages = slider.find('.field--type-image img');
+                    var styleSpan = "color: #b3d9ec;display: block;margin-bottom: 10px;line-height: 28px;font-family: georgia,serif;font-style: italic;font-size: 18px;min-height: 30px;";
+
+                    $.each(sliderImages, function (index, sliderImage) {
+                        var image = $(sliderImage);
+                        image.parent().html('<span style="' + styleSpan + '">' + image.attr('alt') + '</span>' + image.parent().html());
+                    })
+
+                    $(slider).slick({
+                        autoplay: false,
+                        infinite: true,
+                        fade: true,
+                        slidesToShow: 1,
+                        slidesToScroll: 1,
+                        asNavFor: slider_nav,
+                        prevArrow: '<button type="button" data-role="none" class="slick-prev slick-arrow"><span class="glyphicon glyphicon-chevron-left"></span></button>',
+                        nextArrow: '<button type="button" data-role="none" class="slick-next slick-arrow"><span class="glyphicon glyphicon-chevron-right"></span></button>'
+                    });
+
+                    $(slider_nav).slick({
+                        slidesToShow: 5,
+                        slidesToScroll: 1,
+                        asNavFor: slider,
+                        focusOnSelect: true,
+                        prevArrow: '<button type="button" data-role="none" class="slick-prev slick-arrow"><span class="glyphicon glyphicon-chevron-left"></span></button>',
+                        nextArrow: '<button type="button" data-role="none" class="slick-next slick-arrow"><span class="glyphicon glyphicon-chevron-right"></span></button>'
+                    });
+
+                    $(this).addClass('gnc-medias-diaporama-processed');
+                });
+            }
+
+        }
+    };
+})(jQuery);
